@@ -10,10 +10,13 @@
 /.idea/assetWizardSettings.xml
 .DS_Store
 /build
+/app/build
 /captures
 .externalNativeBuild
 .cxx
 local.properties
 backend/node_modules
 backend/.env
+keystores/
+.codex/
 memory-bank/
