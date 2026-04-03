@@ -1,0 +1,140 @@
+import java.util.Properties
+
+plugins {
+    alias(libs.plugins.android.application)
+}
+
+def localProperties = new Properties()
+def localPropertiesFile = rootProject.file("local.properties")
+if (localPropertiesFile.exists()) {
+    localPropertiesFile.withInputStream { stream ->
+        localProperties.load(stream)
+    }
+}
+
+def testAdmobAppId = "ca-app-pub-3940256099942544~3347511713"
+def testBannerAdUnitId = "ca-app-pub-3940256099942544/9214589741"
+def testInterstitialAdUnitId = "ca-app-pub-3940256099942544/1033173712"
+
+def admobAppId = localProperties.getProperty("admob.appId", testAdmobAppId)
+def legacyBannerAdUnitId = localProperties.getProperty("admob.bannerAdUnitId", "")
+def admobSearchBannerAdUnitId = localProperties.getProperty(
+        "admob.searchBannerAdUnitId",
+        legacyBannerAdUnitId ?: testBannerAdUnitId
+)
+def admobResultBannerAdUnitId = localProperties.getProperty(
+        "admob.resultBannerAdUnitId",
+        legacyBannerAdUnitId ?: testBannerAdUnitId
+)
+def admobInterstitialAdUnitId = localProperties.getProperty("admob.interstitialAdUnitId", testInterstitialAdUnitId)
+def motBackendBaseUrl = localProperties.getProperty("mot.backendBaseUrl", "")
+def motBackendAppKey = localProperties.getProperty("mot.backendAppKey", "")
+def releaseStoreFile = localProperties.getProperty("release.storeFile", "")
+def releaseStorePassword = localProperties.getProperty("release.storePassword", "")
+def releaseKeyAlias = localProperties.getProperty("release.keyAlias", "")
+def releaseKeyPassword = localProperties.getProperty("release.keyPassword", "")
+
+def buildingRelease = gradle.startParameter.taskNames.any { taskName ->
+    taskName != null && taskName.toLowerCase().contains("release")
+}
+
+if (buildingRelease) {
+    def usingTestAdmobIds = admobAppId == testAdmobAppId
+            || admobSearchBannerAdUnitId == testBannerAdUnitId
+            || admobResultBannerAdUnitId == testBannerAdUnitId
+            || admobInterstitialAdUnitId == testInterstitialAdUnitId
+    if (usingTestAdmobIds) {
+        throw new GradleException(
+                "Release builds require production AdMob IDs in local.properties " +
+                        "(admob.appId, admob.searchBannerAdUnitId, admob.resultBannerAdUnitId, admob.interstitialAdUnitId)."
+        )
+    }
+    if (motBackendBaseUrl.trim().isEmpty()) {
+        throw new GradleException(
+                "Release builds require mot.backendBaseUrl in local.properties so the app uses the backend proxy."
+        )
+    }
+    if (releaseStoreFile.trim().isEmpty()
+            || releaseStorePassword.trim().isEmpty()
+            || releaseKeyAlias.trim().isEmpty()
+            || releaseKeyPassword.trim().isEmpty()) {
+        throw new GradleException(
+                "Release builds require signing config in local.properties " +
+                        "(release.storeFile, release.storePassword, release.keyAlias, release.keyPassword)."
+        )
+    }
+}
+
+android {
+    namespace 'com.ampsoft.MOTHistory'
+    compileSdk 35
+
+    defaultConfig {
+        applicationId "com.ampsoft.MOTHistory"
+        minSdk 26
+        targetSdk 35
+        versionCode 5
+        versionName "1.0"
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+
+        buildConfigField "String", "MOT_BACKEND_BASE_URL", "\"${motBackendBaseUrl}\""
+        buildConfigField "String", "MOT_BACKEND_APP_KEY", "\"${motBackendAppKey}\""
+        buildConfigField "String", "ADMOB_SEARCH_BANNER_AD_UNIT_ID", "\"${admobSearchBannerAdUnitId}\""
+        buildConfigField "String", "ADMOB_RESULT_BANNER_AD_UNIT_ID", "\"${admobResultBannerAdUnitId}\""
+        buildConfigField "String", "ADMOB_INTERSTITIAL_AD_UNIT_ID", "\"${admobInterstitialAdUnitId}\""
+
+        manifestPlaceholders = [
+                admobAppId: admobAppId,
+                usesCleartextTraffic: "true"
+        ]
+    }
+
+    signingConfigs {
+        release {
+            storeFile rootProject.file(releaseStoreFile)
+            storePassword releaseStorePassword
+            keyAlias releaseKeyAlias
+            keyPassword releaseKeyPassword
+        }
+    }
+    buildTypes {
+        debug {
+            applicationIdSuffix ".debug"
+            versionNameSuffix "-debug"
+            manifestPlaceholders.usesCleartextTraffic = "true"
+        }
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            manifestPlaceholders.usesCleartextTraffic = "false"
+            signingConfig signingConfigs.release
+        }
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_11
+        targetCompatibility JavaVersion.VERSION_11
+    }
+    buildFeatures {
+        buildConfig true
+    }
+}
+
+dependencies {
+    implementation libs.appcompat
+    implementation libs.material
+    implementation libs.lifecycle.viewmodel
+    implementation libs.lifecycle.livedata
+    implementation libs.navigation.fragment
+    implementation libs.navigation.ui
+    implementation libs.recyclerview
+    implementation libs.retrofit
+    implementation libs.retrofit.gson
+    implementation libs.okhttp
+    implementation libs.okhttp.logging
+    implementation libs.google.mobile.ads
+    implementation libs.ump
+    testImplementation libs.junit
+    androidTestImplementation libs.ext.junit
+    androidTestImplementation libs.espresso.core
+}

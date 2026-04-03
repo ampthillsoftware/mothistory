@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/searchFragment"
+        android:icon="@android:drawable/ic_menu_search"
+        android:title="@string/nav_search" />
+    <item
+        android:id="@+id/savedCarsFragment"
+        android:icon="@android:drawable/ic_menu_save"
+        android:title="@string/nav_saved_cars" />
+    <item
+        android:id="@+id/settingsFragment"
+        android:icon="@drawable/ic_settings_24"
+        android:title="@string/nav_settings" />
+</menu>

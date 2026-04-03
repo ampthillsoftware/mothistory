@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/searchFragment">
+
+    <fragment
+        android:id="@+id/searchFragment"
+        android:name="com.ampsoft.MOTHistory.ui.search.SearchFragment"
+        android:label="@string/search_title"
+        tools:layout="@layout/fragment_search">
+        <action
+            android:id="@+id/action_searchFragment_to_resultFragment"
+            app:destination="@id/resultFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/resultFragment"
+        android:name="com.ampsoft.MOTHistory.ui.result.ResultFragment"
+        android:label="@string/result_title"
+        tools:layout="@layout/fragment_result">
+        <argument
+            android:name="vehicle"
+            app:argType="com.ampsoft.MOTHistory.data.model.Vehicle" />
+        <action
+            android:id="@+id/action_resultFragment_to_motHistoryFragment"
+            app:destination="@id/motHistoryFragment" />
+        <action
+            android:id="@+id/action_resultFragment_to_mileageFragment"
+            app:destination="@id/mileageFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/motHistoryFragment"
+        android:name="com.ampsoft.MOTHistory.ui.result.MotHistoryFragment"
+        android:label="@string/mot_history_screen_title"
+        tools:layout="@layout/fragment_mot_history">
+        <argument
+            android:name="vehicle"
+            app:argType="com.ampsoft.MOTHistory.data.model.Vehicle" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/mileageFragment"
+        android:name="com.ampsoft.MOTHistory.ui.result.MileageFragment"
+        android:label="@string/mileage_screen_title"
+        tools:layout="@layout/fragment_mileage">
+        <argument
+            android:name="vehicle"
+            app:argType="com.ampsoft.MOTHistory.data.model.Vehicle" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/savedCarsFragment"
+        android:name="com.ampsoft.MOTHistory.ui.saved.SavedCarsFragment"
+        android:label="@string/nav_saved_cars"
+        tools:layout="@layout/fragment_saved_cars" />
+
+    <fragment
+        android:id="@+id/settingsFragment"
+        android:name="com.ampsoft.MOTHistory.ui.settings.SettingsFragment"
+        android:label="@string/nav_settings"
+        tools:layout="@layout/fragment_settings" />
+
+</navigation>
