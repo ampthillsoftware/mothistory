@@ -53,6 +53,10 @@ public final class VehicleStore {
         return loadVehicles(context, KEY_SAVED_VEHICLES);
     }
 
+    public static Vehicle getSavedVehicleByRegistration(Context context, String registration) {
+        return findVehicleByRegistration(loadVehicles(context, KEY_SAVED_VEHICLES), registration);
+    }
+
     public static boolean isVehicleSaved(Context context, String registration) {
         return findVehicleByRegistration(loadVehicles(context, KEY_SAVED_VEHICLES), registration) != null;
     }

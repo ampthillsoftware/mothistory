@@ -28,6 +28,7 @@ import com.ampsoft.MOTHistory.data.model.Vehicle;
 import com.ampsoft.MOTHistory.data.repository.MotRepository;
 import com.ampsoft.MOTHistory.data.repository.RepositoryResult;
 import com.ampsoft.MOTHistory.ui.common.VehicleCardAdapter;
+import com.ampsoft.MOTHistory.util.ReviewPromptStore;
 import com.ampsoft.MOTHistory.util.RegistrationValidator;
 import com.google.android.gms.ads.AdView;
 
@@ -95,13 +96,14 @@ public class SearchFragment extends Fragment {
 
             if (result.getStatus() == RepositoryResult.Status.SUCCESS && result.getData() != null) {
                 Vehicle vehicle = result.getData();
+                boolean shouldPromptForReview = ReviewPromptStore.recordSuccessfulLookup(requireContext());
                 messageText.setVisibility(View.GONE);
                 VehicleStore.addRecentVehicle(requireContext(), vehicle);
                 bindRecentSearches(recentSearchAdapter, recentEmptyText);
                 viewModel.clearLookupResult();
                 AdsManager.getInstance().maybeShowInterstitialOnLookupSuccess(
                         requireActivity(),
-                        () -> openVehicle(view, vehicle)
+                        () -> openVehicle(view, vehicle, shouldPromptForReview)
                 );
                 return;
             }
@@ -135,8 +137,15 @@ public class SearchFragment extends Fragment {
     }
 
     private void openVehicle(@NonNull View view, @NonNull Vehicle vehicle) {
+        openVehicle(view, vehicle, false);
+    }
+
+    private void openVehicle(@NonNull View view,
+                             @NonNull Vehicle vehicle,
+                             boolean shouldPromptForReview) {
         Bundle args = new Bundle();
         args.putSerializable("vehicle", vehicle);
+        args.putBoolean("prompt_for_review", shouldPromptForReview);
         Navigation.findNavController(view).navigate(R.id.action_searchFragment_to_resultFragment, args);
     }
 

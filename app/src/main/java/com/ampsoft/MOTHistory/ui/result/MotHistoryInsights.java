@@ -158,11 +158,26 @@ final class MotHistoryInsights {
 
         Long getLatestDelta() {
             MileagePoint latest = getLatestPoint();
-            MileagePoint previous = getPreviousPoint();
+            MileagePoint previous = getPreviousYearPoint();
             if (latest == null || previous == null || !latest.getUnit().equals(previous.getUnit())) {
                 return null;
             }
             return latest.getMileageValue() - previous.getMileageValue();
+        }
+
+        MileagePoint getPreviousYearPoint() {
+            MileagePoint latest = getLatestPoint();
+            if (latest == null) {
+                return null;
+            }
+            int latestYear = latest.getCompletedDate().getYear();
+            for (int i = points.size() - 2; i >= 0; i--) {
+                MileagePoint point = points.get(i);
+                if (point.getCompletedDate().getYear() < latestYear) {
+                    return point;
+                }
+            }
+            return null;
         }
 
         String getUnit() {

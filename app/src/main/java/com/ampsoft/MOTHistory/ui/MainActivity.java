@@ -1,14 +1,11 @@
 package com.ampsoft.MOTHistory.ui;
 
-import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
-import android.view.Window;
 import android.view.ViewGroup;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.content.res.AppCompatResources;
-import androidx.core.content.ContextCompat;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowCompat;
@@ -20,12 +17,18 @@ import androidx.navigation.ui.NavigationUI;
 
 import com.ampsoft.MOTHistory.R;
 import com.ampsoft.MOTHistory.ads.AdsManager;
+import com.ampsoft.MOTHistory.billing.BillingManager;
+import com.ampsoft.MOTHistory.data.local.VehicleStore;
+import com.ampsoft.MOTHistory.data.model.Vehicle;
+import com.ampsoft.MOTHistory.reminders.MotReminderScheduler;
 import com.ampsoft.MOTHistory.util.ThemePreferences;
 import com.google.android.material.appbar.AppBarLayout;
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 public class MainActivity extends AppCompatActivity {
+
+    public static final String EXTRA_OPEN_RESULT_REGISTRATION = "open_result_registration";
 
     private AppBarConfiguration appBarConfiguration;
     private boolean suppressBottomNavCallbacks;
@@ -44,7 +47,9 @@ public class MainActivity extends AppCompatActivity {
         BottomNavigationView bottomNavigationView = findViewById(R.id.bottom_navigation);
         setSupportActionBar(toolbar);
         applySystemBarBranding(topAppBarContainer, toolbar, bottomNavigationView);
+        BillingManager.getInstance().initialize(this);
         AdsManager.getInstance().initialize(this);
+        MotReminderScheduler.ensureNotificationChannel(this);
 
         NavHostFragment navHostFragment = (NavHostFragment)
                 getSupportFragmentManager().findFragmentById(R.id.nav_host_fragment);
@@ -98,6 +103,19 @@ public class MainActivity extends AppCompatActivity {
             }
             updateNavigationIcon(destinationId);
         });
+        handleLaunchIntent(navController);
+    }
+
+    @Override
+    protected void onNewIntent(android.content.Intent intent) {
+        super.onNewIntent(intent);
+        setIntent(intent);
+        NavHostFragment navHostFragment = (NavHostFragment)
+                getSupportFragmentManager().findFragmentById(R.id.nav_host_fragment);
+        if (navHostFragment == null) {
+            return;
+        }
+        handleLaunchIntent(navHostFragment.getNavController());
     }
 
     @Override
@@ -145,14 +163,6 @@ public class MainActivity extends AppCompatActivity {
             MaterialToolbar toolbar,
             BottomNavigationView bottomNavigationView
     ) {
-        int motBlue = ContextCompat.getColor(this, R.color.mot_blue);
-        Window window = getWindow();
-        window.setStatusBarColor(motBlue);
-        window.setNavigationBarColor(motBlue);
-        if (getSupportActionBar() != null) {
-            getSupportActionBar().setBackgroundDrawable(new ColorDrawable(motBlue));
-        }
-
         final int toolbarBaseHeight = toolbar.getLayoutParams().height;
         final int toolbarBasePaddingStart = toolbar.getPaddingStart();
         final int toolbarBasePaddingTop = toolbar.getPaddingTop();
@@ -205,5 +215,29 @@ public class MainActivity extends AppCompatActivity {
 
         toolbar.setNavigationIcon(whiteUpArrow);
         toolbar.setNavigationOnClickListener(v -> onSupportNavigateUp());
+    }
+
+    private void handleLaunchIntent(NavController navController) {
+        String registration = getIntent() != null
+                ? getIntent().getStringExtra(EXTRA_OPEN_RESULT_REGISTRATION)
+                : null;
+        if (registration == null || registration.trim().isEmpty()) {
+            return;
+        }
+        Vehicle vehicle = VehicleStore.getSavedVehicleByRegistration(this, registration);
+        if (vehicle == null) {
+            clearLaunchIntentExtra();
+            return;
+        }
+        Bundle args = new Bundle();
+        args.putSerializable("vehicle", vehicle);
+        navController.navigate(R.id.resultFragment, args);
+        clearLaunchIntentExtra();
+    }
+
+    private void clearLaunchIntentExtra() {
+        if (getIntent() != null) {
+            getIntent().removeExtra(EXTRA_OPEN_RESULT_REGISTRATION);
+        }
     }
 }
