@@ -135,7 +135,6 @@ dependencies {
     implementation libs.google.mobile.ads
     implementation libs.ump
     implementation libs.play.review
-    implementation libs.play.billing
     implementation libs.work.runtime
     testImplementation libs.junit
     androidTestImplementation libs.ext.junit

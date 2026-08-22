@@ -17,7 +17,6 @@ import androidx.navigation.ui.NavigationUI;
 
 import com.ampsoft.MOTHistory.R;
 import com.ampsoft.MOTHistory.ads.AdsManager;
-import com.ampsoft.MOTHistory.billing.BillingManager;
 import com.ampsoft.MOTHistory.data.local.VehicleStore;
 import com.ampsoft.MOTHistory.data.model.Vehicle;
 import com.ampsoft.MOTHistory.reminders.MotReminderScheduler;
@@ -47,7 +46,6 @@ public class MainActivity extends AppCompatActivity {
         BottomNavigationView bottomNavigationView = findViewById(R.id.bottom_navigation);
         setSupportActionBar(toolbar);
         applySystemBarBranding(topAppBarContainer, toolbar, bottomNavigationView);
-        BillingManager.getInstance().initialize(this);
         AdsManager.getInstance().initialize(this);
         MotReminderScheduler.ensureNotificationChannel(this);
 

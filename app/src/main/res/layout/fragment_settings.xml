@@ -93,30 +93,4 @@
         android:textColor="@color/action_emphasis"
         app:strokeColor="@color/action_emphasis" />
 
-    <TextView
-        android:id="@+id/tv_remove_ads_section_title"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="20dp"
-        android:text="@string/settings_remove_ads_section_title"
-        android:textAppearance="@style/TextAppearance.MaterialComponents.Subtitle1" />
-
-    <TextView
-        android:id="@+id/tv_remove_ads_summary"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:text="@string/settings_remove_ads_summary"
-        android:textAppearance="@style/TextAppearance.MaterialComponents.Body2" />
-
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/btn_remove_ads"
-        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="10dp"
-        android:text="@string/settings_remove_ads_button"
-        android:textColor="@color/action_emphasis"
-        app:strokeColor="@color/action_emphasis" />
-
 </LinearLayout>

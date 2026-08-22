@@ -112,11 +112,6 @@
     <string name="settings_rate_section_title">Rate the app</string>
     <string name="settings_rate_summary">Leave a review on Google Play whenever you are ready.</string>
     <string name="settings_rate_button">Rate this app</string>
-    <string name="settings_remove_ads_section_title">Remove ads</string>
-    <string name="settings_remove_ads_summary">One-time purchase to remove banner and interstitial ads permanently.</string>
-    <string name="settings_remove_ads_owned_summary">Ads are removed on this Google Play account.</string>
-    <string name="settings_remove_ads_button">Remove ads</string>
-    <string name="settings_remove_ads_button_with_price">Remove ads — %1$s</string>
     <string name="settings_privacy_section_title">Privacy</string>
     <string name="settings_privacy_summary">Review or update your ad privacy choices.</string>
     <string name="settings_privacy_button">Privacy options</string>

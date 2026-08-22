@@ -14,7 +14,6 @@ import androidx.annotation.NonNull;
 
 import com.ampsoft.MOTHistory.BuildConfig;
 import com.ampsoft.MOTHistory.R;
-import com.ampsoft.MOTHistory.billing.BillingManager;
 import com.google.android.gms.ads.AdListener;
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.AdRequest;
@@ -50,7 +49,6 @@ public class AdsManager {
     private ConsentInformation consentInformation;
     private boolean mobileAdsInitialized;
     private boolean allowAdsWithoutConsentDueToError;
-    private boolean adsRemoved;
     private InterstitialAd interstitialAd;
     private boolean interstitialLoading;
     private int successfulLookupCount;
@@ -89,19 +87,9 @@ public class AdsManager {
         }
 
         synchronized (lock) {
-            adsRemoved = BillingManager.getInstance().isAdsRemoved();
             if (consentInformation == null) {
                 consentInformation = UserMessagingPlatform.getConsentInformation(activity);
             }
-        }
-
-        BillingManager.getInstance().addListener((removed, price) -> {
-            if (removed) {
-                disableAds();
-            }
-        });
-        if (BillingManager.getInstance().isAdsRemoved()) {
-            return;
         }
 
         ConsentRequestParameters.Builder paramsBuilder = new ConsentRequestParameters.Builder();
@@ -144,20 +132,9 @@ public class AdsManager {
         }
     }
 
-    private void disableAds() {
-        synchronized (lock) {
-            adsRemoved = true;
-            interstitialAd = null;
-            interstitialLoading = false;
-            pendingReadyActions.clear();
-        }
-        Log.d(TAG, "Ads disabled for purchased entitlement.");
-    }
-
     public boolean isPrivacyOptionsRequired() {
         synchronized (lock) {
-            return !adsRemoved
-                    && consentInformation != null
+            return consentInformation != null
                     && consentInformation.getPrivacyOptionsRequirementStatus()
                     == ConsentInformation.PrivacyOptionsRequirementStatus.REQUIRED;
         }
@@ -167,11 +144,6 @@ public class AdsManager {
         if (Looper.myLooper() != Looper.getMainLooper()) {
             mainHandler.post(() -> showPrivacyOptionsForm(activity));
             return;
-        }
-        synchronized (lock) {
-            if (adsRemoved) {
-                return;
-            }
         }
         UserMessagingPlatform.showPrivacyOptionsForm(
                 activity,
@@ -192,12 +164,6 @@ public class AdsManager {
             @NonNull Activity activity,
             @NonNull ContinueAction continueAction
     ) {
-        synchronized (lock) {
-            if (adsRemoved) {
-                continueAction.run();
-                return;
-            }
-        }
         InterstitialAd adToShow = null;
         int currentSuccessCount;
         boolean shouldShowNow;
@@ -254,7 +220,7 @@ public class AdsManager {
             @NonNull BannerPlacement placement
     ) {
         synchronized (lock) {
-            if (adsRemoved || !canRequestAdsLocked()) {
+            if (!canRequestAdsLocked()) {
                 container.removeAllViews();
                 return null;
             }
@@ -336,11 +302,6 @@ public class AdsManager {
     }
 
     private void startMobileAds(@NonNull Context context) {
-        synchronized (lock) {
-            if (adsRemoved) {
-                return;
-            }
-        }
         boolean alreadyInitialized;
         synchronized (lock) {
             alreadyInitialized = mobileAdsInitialized;
@@ -363,7 +324,7 @@ public class AdsManager {
 
     private void maybeLoadInterstitial(@NonNull Context context) {
         synchronized (lock) {
-            if (adsRemoved || !mobileAdsInitialized || !canRequestAds()
+            if (!mobileAdsInitialized || !canRequestAds()
                     || interstitialLoading || interstitialAd != null) {
                 return;
             }
@@ -412,9 +373,6 @@ public class AdsManager {
     }
 
     private boolean canRequestAdsLocked() {
-        if (adsRemoved) {
-            return false;
-        }
         if (allowAdsWithoutConsentDueToError) {
             return true;
         }
@@ -424,9 +382,6 @@ public class AdsManager {
     private void runWhenAdsReady(@NonNull Runnable action) {
         boolean runImmediately;
         synchronized (lock) {
-            if (adsRemoved) {
-                return;
-            }
             runImmediately = mobileAdsInitialized && canRequestAdsLocked();
             if (!runImmediately) {
                 pendingReadyActions.add(action);

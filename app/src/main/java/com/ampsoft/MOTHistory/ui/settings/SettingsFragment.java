@@ -14,15 +14,11 @@ import androidx.fragment.app.Fragment;
 
 import com.ampsoft.MOTHistory.R;
 import com.ampsoft.MOTHistory.ads.AdsManager;
-import com.ampsoft.MOTHistory.billing.BillingManager;
 import com.ampsoft.MOTHistory.util.AppReviewManager;
 import com.ampsoft.MOTHistory.util.ThemePreferences;
 import com.google.android.material.button.MaterialButton;
 
 public class SettingsFragment extends Fragment {
-
-    private BillingManager billingManager;
-    private BillingManager.Listener billingListener;
 
     @Nullable
     @Override
@@ -43,9 +39,6 @@ public class SettingsFragment extends Fragment {
         TextView rateTitle = view.findViewById(R.id.tv_rate_section_title);
         TextView rateSummary = view.findViewById(R.id.tv_rate_summary);
         MaterialButton rateButton = view.findViewById(R.id.btn_rate_app);
-        TextView removeAdsTitle = view.findViewById(R.id.tv_remove_ads_section_title);
-        TextView removeAdsSummary = view.findViewById(R.id.tv_remove_ads_summary);
-        MaterialButton removeAdsButton = view.findViewById(R.id.btn_remove_ads);
         int currentMode = ThemePreferences.getSavedMode(requireContext());
         themeGroup.check(toRadioId(currentMode));
 
@@ -70,40 +63,6 @@ public class SettingsFragment extends Fragment {
         rateButton.setVisibility(View.VISIBLE);
         rateButton.setOnClickListener(v -> AppReviewManager.openPlayStoreListing(requireContext()));
 
-        billingManager = BillingManager.getInstance();
-        billingListener = (adsRemoved, formattedPrice) -> {
-            if (!isAdded()) {
-                return;
-            }
-            if (adsRemoved) {
-                removeAdsTitle.setVisibility(View.VISIBLE);
-                removeAdsSummary.setVisibility(View.VISIBLE);
-                removeAdsSummary.setText(R.string.settings_remove_ads_owned_summary);
-                removeAdsButton.setVisibility(View.GONE);
-                return;
-            }
-            removeAdsTitle.setVisibility(View.VISIBLE);
-            removeAdsSummary.setVisibility(View.VISIBLE);
-            removeAdsSummary.setText(R.string.settings_remove_ads_summary);
-            removeAdsButton.setVisibility(View.VISIBLE);
-            removeAdsButton.setEnabled(billingManager.isRemoveAdsAvailable());
-            String buttonText = formattedPrice == null
-                    ? getString(R.string.settings_remove_ads_button)
-                    : getString(R.string.settings_remove_ads_button_with_price, formattedPrice);
-            removeAdsButton.setText(buttonText);
-        };
-        billingManager.addListener(billingListener);
-        removeAdsButton.setOnClickListener(v -> billingManager.purchaseRemoveAds(requireActivity()));
-    }
-
-    @Override
-    public void onDestroyView() {
-        if (billingManager != null && billingListener != null) {
-            billingManager.removeListener(billingListener);
-        }
-        billingManager = null;
-        billingListener = null;
-        super.onDestroyView();
     }
 
     private int toRadioId(int mode) {
